@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Publish
+        run: >
+          dotnet publish src/ModernUOConfigurator.csproj
+          -c Release
+          -r win-x64
+          --self-contained
+          -o publish_output
+
+      - name: Build installer
+        run: iscc /DMyAppVersion=${{ steps.version.outputs.VERSION }} installer\ModernUOConfigurator.iss
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer/Output/ModernUOConfigurator-Setup-${{ steps.version.outputs.VERSION }}.exe
+          generate_release_notes: true

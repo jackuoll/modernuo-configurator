@@ -53,5 +53,7 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 publish/
+publish_output/
+installer/Output/
 .claude/
 .vs/
