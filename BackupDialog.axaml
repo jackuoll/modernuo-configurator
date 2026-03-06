@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ModernUOConfigurator.BackupDialog"
+        Title="Backup Current Saves"
+        Width="420"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+    <StackPanel Margin="16" Spacing="10">
+
+        <TextBlock Text="Folder name" FontWeight="SemiBold"/>
+        <TextBox x:Name="NameBox"
+                 Watermark="e.g. Pre-event backup"
+                 KeyDown="OnNameKeyDown"/>
+
+        <TextBlock Text="Description (optional)" FontWeight="SemiBold"/>
+        <TextBox x:Name="DescriptionBox"
+                 AcceptsReturn="True"
+                 Height="72"
+                 TextWrapping="Wrap"
+                 Watermark="Notes about this save…"/>
+
+        <StackPanel Orientation="Horizontal"
+                    Spacing="8"
+                    HorizontalAlignment="Right"
+                    Margin="0,4,0,0">
+            <Button Content="Cancel" Click="OnCancel" Width="80"/>
+            <Button Content="Backup"
+                    Click="OnBackup"
+                    Width="80"
+                    IsEnabled="{Binding #NameBox.Text, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        </StackPanel>
+
+    </StackPanel>
+</Window>

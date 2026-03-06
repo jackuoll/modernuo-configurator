@@ -1,0 +1,385 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ModernUOConfigurator.ViewModels"
+        xmlns:local="using:ModernUOConfigurator"
+        x:Class="ModernUOConfigurator.MainWindow"
+        Title="ModernUO Configurator"
+        Icon="avares://ModernUOConfigurator/MUO.ico"
+        Width="960" Height="700"
+        MinWidth="740" MinHeight="520">
+
+    <Window.Styles>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#c0392b"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#e74c3c"/>
+        </Style>
+        <Style Selector="Button.danger:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#922b21"/>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+
+        <!-- ── Top toolbar ── -->
+        <Border DockPanel.Dock="Top"
+                Padding="12,8"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="ModernUO Root:"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+                <TextBox Grid.Column="1"
+                         Text="{Binding RootPath}"
+                         Watermark="Path to ModernUO repo root (contains ModernUO.sln)…"
+                         Margin="0,0,4,0"/>
+                <Button Grid.Column="2"
+                        Content="Browse…"
+                        Command="{Binding BrowseRootCommand}"
+                        Margin="0,0,4,0"/>
+                <Button Grid.Column="3"
+                        Content="Load"
+                        Command="{Binding LoadCommand}"
+                        Margin="0,0,4,0"/>
+                <Button Grid.Column="4"
+                        Content="Save All"
+                        Command="{Binding SaveCommand}"/>
+            </Grid>
+        </Border>
+
+        <!-- ── Status bar ── -->
+        <Border DockPanel.Dock="Bottom"
+                Padding="12,5"
+                BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        </Border>
+
+        <!-- ── Tabs ── -->
+        <TabControl Padding="0" SelectedIndex="2">
+
+            <!-- Configuration (Client Folder + Expansion) -->
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,*" Margin="12">
+
+                    <!-- Expansion cards side-by-side -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="0,0,0,12">
+                        <Border Padding="14"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                CornerRadius="4">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Active Expansion"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                <TextBlock Text="{Binding CurrentExpansionName}"
+                                           FontSize="20"
+                                           FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Padding="14"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                CornerRadius="4">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Change Expansion Preset" FontWeight="SemiBold"/>
+                                <ComboBox ItemsSource="{Binding ExpansionPresets}"
+                                          SelectedItem="{Binding SelectedPreset}"
+                                          MinWidth="220">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Text="The selected preset will be written to expansion.json when you click Save All."
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                           FontStyle="Italic"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Data directories -->
+                    <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto">
+                        <TextBlock Grid.Row="0"
+                                   Text="Data directories — paths to your UO client installation:"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,8"/>
+                        <ListBox Grid.Row="1"
+                                 ItemsSource="{Binding DataDirectories}"
+                                 SelectedItem="{Binding SelectedDataDir}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Margin="4,2"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel Grid.Row="2"
+                                    Orientation="Horizontal"
+                                    Spacing="8"
+                                    Margin="0,8,0,0">
+                            <Button Content="Add Folder…" Command="{Binding AddDataDirCommand}"/>
+                            <Button Content="Remove Selected" Command="{Binding RemoveDataDirCommand}"/>
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+            </TabItem>
+
+            <!-- Settings / Feature Flags -->
+            <TabItem Header="Settings">
+                <Grid RowDefinitions="Auto,*">
+                <TextBox Grid.Row="0"
+                         Text="{Binding SettingsSearch}"
+                         Watermark="Search settings… (e.g. accountHandler, enableAuto)"
+                         Margin="8,8,8,4"/>
+                <ScrollViewer Grid.Row="1" Padding="8" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding FilteredSettingGroups}">
+                        <ItemsControl.Styles>
+                            <Style Selector="ContentPresenter">
+                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                <Setter Property="VerticalAlignment" Value="Stretch"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                            </Style>
+                        </ItemsControl.Styles>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <local:EqualHeightWrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Expander Header="{Binding Name}"
+                                          IsExpanded="True"
+                                          Margin="4"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch">
+                                    <ItemsControl ItemsSource="{Binding Items}"
+                                                  Margin="8,2,8,8">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ColumnDefinitions="*,Auto" Margin="2,3">
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding DisplayName}"
+                                                               VerticalAlignment="Center"
+                                                               TextWrapping="Wrap"
+                                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                                    <Panel Grid.Column="1">
+                                                        <ToggleSwitch IsChecked="{Binding BoolValue}"
+                                                                      IsVisible="{Binding IsBool}"
+                                                                      OnContent="Enabled"
+                                                                      OffContent="Disabled"
+                                                                      HorizontalAlignment="Left"/>
+                                                        <TextBox Text="{Binding Value}"
+                                                                 IsVisible="{Binding IsNotBool}"
+                                                                 Width="120"
+                                                                 HorizontalAlignment="Left"/>
+                                                    </Panel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Expander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- Build & Run -->
+            <TabItem Header="Build &amp; Run">
+                <Grid RowDefinitions="Auto,*" Margin="12">
+
+                    <!-- Commands -->
+                    <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,10">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,2">
+                            <TextBlock Grid.Column="0" Text="Build:" VerticalAlignment="Center" Width="44"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding BuildCommandText}"
+                                     Margin="0,0,8,0"
+                                     FontFamily="Consolas,Courier New,monospace"/>
+                            <Button Grid.Column="2"
+                                    Content="▶ Build"
+                                    Command="{Binding BuildCommand}"
+                                    IsEnabled="{Binding !IsBusy}"
+                                    Margin="0,0,4,0"/>
+                            <Button Grid.Column="3"
+                                    Content="▶▶ Build &amp; Run"
+                                    Command="{Binding BuildAndRunCommand}"
+                                    IsEnabled="{Binding !IsBusy}"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,2">
+                            <TextBlock Grid.Column="0" Text="Release:" VerticalAlignment="Center" Width="52"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding ReleaseCommandText}"
+                                     Margin="0,0,8,0"
+                                     FontFamily="Consolas,Courier New,monospace"/>
+                            <Button Grid.Column="2"
+                                    Content="▶ Release"
+                                    Command="{Binding ReleaseCommand}"
+                                    IsEnabled="{Binding !IsBusy}"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                            <TextBlock Grid.Column="0" Text="Run:" VerticalAlignment="Center" Width="44"/>
+                            <TextBox Grid.Column="1"
+                                     Text="{Binding RunCommandText}"
+                                     Margin="0,0,8,0"
+                                     FontFamily="Consolas,Courier New,monospace"/>
+                            <Button Grid.Column="2"
+                                    Content="▶ Run"
+                                    Command="{Binding RunCommand}"
+                                    IsEnabled="{Binding !IsBusy}"
+                                    Margin="0,0,4,0"/>
+                            <Button Grid.Column="3"
+                                    Content="■ Stop"
+                                    Command="{Binding StopCommand}"
+                                    IsEnabled="{Binding IsBusy}"/>
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Run CWD: Distribution/"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                       FontStyle="Italic"
+                                       VerticalAlignment="Center"/>
+                            <Button Content="Clear" Command="{Binding ClearOutputCommand}" Padding="8,3"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Output -->
+                    <Border Grid.Row="1"
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            CornerRadius="4"
+                            Background="#1e1e1e">
+                        <ScrollViewer x:Name="OutputScroll" HorizontalScrollBarVisibility="Auto">
+                            <SelectableTextBlock Text="{Binding OutputText}"
+                                                 Foreground="#d4d4d4"
+                                                 FontFamily="Consolas,Courier New,monospace"
+                                                 FontSize="12"
+                                                 Padding="8"
+                                                 TextWrapping="NoWrap"/>
+                        </ScrollViewer>
+                    </Border>
+
+                </Grid>
+            </TabItem>
+
+
+            <!-- Saves -->
+            <TabItem Header="Saves">
+                <Grid RowDefinitions="Auto,*" Margin="12">
+
+                    <!-- Toolbar -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                        <Button Content="Backup Current Saves"
+                                Command="{Binding BackupCurrentSavesCommand}"
+                                IsEnabled="{Binding !IsBusy}"/>
+                        <Button Content="Refresh"
+                                Command="{Binding RefreshSavesCommand}"/>
+                    </StackPanel>
+
+                    <!-- List + Detail split -->
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,280">
+
+                        <!-- Left: save list -->
+                        <Grid ColumnDefinitions="*" RowDefinitions="Auto,*">
+                            <TextBlock Grid.Row="0"
+                                       Text="Saved states (Backups/ — excludes Automatic)"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,6"/>
+                            <ListBox Grid.Row="1"
+                                     ItemsSource="{Binding SaveEntries}"
+                                     SelectedItem="{Binding SelectedSaveEntry}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Grid.Column="0" Margin="4,3">
+                                                <TextBlock Text="{Binding FolderName}"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontStyle="Italic"
+                                                           FontSize="11"
+                                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                           IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        Spacing="4"
+                                                        VerticalAlignment="Center"
+                                                        Margin="8,0,4,0">
+                                                <Button Content="Rename"
+                                                        Command="{Binding $parent[ListBox].DataContext.RenameSaveCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Padding="8,3"/>
+                                                <Button Content="Delete"
+                                                        Classes="danger"
+                                                        Command="{Binding $parent[ListBox].DataContext.DeleteSaveCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Padding="8,3"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+
+                        <!-- Splitter -->
+                        <GridSplitter Grid.Column="1"
+                                      Width="6"
+                                      HorizontalAlignment="Center"
+                                      ResizeDirection="Columns"/>
+
+                        <!-- Right: detail panel -->
+                        <StackPanel Grid.Column="2"
+                                    Spacing="10"
+                                    Margin="8,0,0,0"
+                                    IsEnabled="{Binding SelectedSaveEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
+
+                            <TextBlock Text="{Binding SelectedSaveEntry.FolderName}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"/>
+
+                            <TextBlock Text="Description"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                            <TextBox Text="{Binding SelectedSaveDescription}"
+                                     AcceptsReturn="True"
+                                     Height="80"
+                                     TextWrapping="Wrap"
+                                     Watermark="Optional notes about this save…"/>
+                            <Button Content="Save Description"
+                                    Command="{Binding UpdateSaveDescriptionCommand}"
+                                    HorizontalAlignment="Left"/>
+
+                            <Separator/>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Warning: restoring will overwrite the current Saves/ folder."
+                                           Foreground="#e0a000"
+                                           TextWrapping="Wrap"
+                                           FontSize="11"/>
+                                <Button Content="Restore This Save to Saves/"
+                                        Command="{Binding RestoreSaveCommand}"
+                                        IsEnabled="{Binding !IsBusy}"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"/>
+                            </StackPanel>
+
+                        </StackPanel>
+
+                    </Grid>
+
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+    </DockPanel>
+</Window>
