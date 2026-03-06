@@ -216,17 +216,6 @@
                                     Command="{Binding BuildAndRunCommand}"
                                     IsEnabled="{Binding !IsBusy}"/>
                         </Grid>
-                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,2">
-                            <TextBlock Grid.Column="0" Text="Release:" VerticalAlignment="Center" Width="52"/>
-                            <TextBox Grid.Column="1"
-                                     Text="{Binding ReleaseCommandText}"
-                                     Margin="0,0,8,0"
-                                     FontFamily="Consolas,Courier New,monospace"/>
-                            <Button Grid.Column="2"
-                                    Content="▶ Release"
-                                    Command="{Binding ReleaseCommand}"
-                                    IsEnabled="{Binding !IsBusy}"/>
-                        </Grid>
                         <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                             <TextBlock Grid.Column="0" Text="Run:" VerticalAlignment="Center" Width="44"/>
                             <TextBox Grid.Column="1"

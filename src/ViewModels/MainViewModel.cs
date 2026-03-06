@@ -25,7 +25,7 @@ public partial class MainViewModel : ObservableObject
     private readonly StringBuilder _outputBuilder = new();
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(BuildCommand), nameof(RunCommand), nameof(BuildAndRunCommand), nameof(ReleaseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(BuildCommand), nameof(RunCommand), nameof(BuildAndRunCommand))]
     private string _rootPath = "";
 
     [ObservableProperty] private string _statusMessage = "Browse to your ModernUO root folder and click Load.";
@@ -50,12 +50,11 @@ public partial class MainViewModel : ObservableObject
                 i.Key.Contains(SettingsSearch, StringComparison.OrdinalIgnoreCase)));
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(BuildCommand), nameof(RunCommand), nameof(BuildAndRunCommand), nameof(ReleaseCommand), nameof(StopCommand), nameof(RestoreSaveCommand), nameof(BackupCurrentSavesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(BuildCommand), nameof(RunCommand), nameof(BuildAndRunCommand), nameof(StopCommand), nameof(RestoreSaveCommand), nameof(BackupCurrentSavesCommand))]
     private bool _isBusy;
 
     [ObservableProperty] private string _outputText = "";
     [ObservableProperty] private string _buildCommandText = "cmd /c publish.cmd";
-    [ObservableProperty] private string _releaseCommandText = "pwsh -NonInteractive -File publish.ps1";
     [ObservableProperty] private string _runCommandText = "ModernUO.exe";
 
     // ── Save Management ──────────────────────────────────────────────────────
@@ -268,15 +267,6 @@ public partial class MainViewModel : ObservableObject
     }
 
     // ── Build & Run ──────────────────────────────────────────────────────────
-
-    [RelayCommand(CanExecute = nameof(CanStartProcess))]
-    private async Task Release()
-    {
-        Save();
-        ClearOutput();
-        KillExistingModernUO();
-        await RunProcess(ReleaseCommandText, RootPath, waitForExit: true);
-    }
 
     [RelayCommand(CanExecute = nameof(CanStartProcess))]
     private async Task Build()
