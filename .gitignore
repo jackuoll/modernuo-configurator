@@ -51,6 +51,7 @@ CodeCoverage/
 # NUnit
 *.VisualState.xml
 TestResult.xml
-nunit-*.xmlpublish/
+nunit-*.xml
+publish/
 .claude/
 .vs/
